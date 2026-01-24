@@ -1,0 +1,71 @@
+services:
+  minecraft-bedrock-server:
+    image: itzg/minecraft-bedrock-server:latest
+    container_name: minecraft_bedrock_server
+
+    stdin_open: true
+    tty: true
+
+    ports:
+      - "19132:19132/udp"
+
+    environment:
+      EULA: "TRUE"
+      OPS: "2533275004231170"
+
+      # Recomendación en VPS: fija versión si quieres estabilidad
+      # VERSION: "LATEST"
+      VERSION: "LATEST"
+
+      SERVER_NAME: "Raptor Bedrock"
+      GAMEMODE: "survival"
+      DIFFICULTY: "normal"
+      MAX_PLAYERS: "25"
+      ONLINE_MODE: "true"
+      #WHITE_LIST: "true" #lista de amigos
+      #WHITE_LIST_USERS: "TuGamertag,Amigo1,Amigo2"
+
+      # Mundo
+      LEVEL_NAME: "raptor"
+      # LEVEL_SEED: "123456789"
+      # LEVEL_TYPE: "DEFAULT"  # o "flat"
+
+      # Rendimiento recomendado para 1 vCPU / ~4GB
+      VIEW_DISTANCE: "12"     # 16 ya pega más en CPU/RAM
+      TICK_DISTANCE: "4"      # 4 suele ir estable
+      MAX_THREADS: "2"        # con 1 vCPU, no conviene inflarlo
+      PLAYER_IDLE_TIMEOUT: "30"
+
+      # Cheats / lista
+      ALLOW_CHEATS: "false"
+      WHITE_LIST: "false"
+      # Si activas whitelist:
+      # WHITE_LIST: "true"
+      # WHITE_LIST_USERS: "TuGamertag,OtroGamertag"
+
+      PACKAGE_BACKUP_KEEP: "2"
+
+    volumes:
+      - ./bedrock-data:/data
+
+    restart: unless-stopped
+    stop_grace_period: 60s
+
+    healthcheck:
+      test: ["CMD-SHELL", "test -f /data/server.properties"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+    # En Compose normal a veces no aplica "deploy", pero si tu compose lo respeta, ayuda.
+    deploy:
+      resources:
+        limits:
+          memory: 2800m
