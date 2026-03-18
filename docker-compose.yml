@@ -1,57 +1,24 @@
-name: ${COMPOSE_PROJECT_NAME:-minecraft-bedrock}
+name: ${COMPOSE_PROJECT_NAME:-minecraft-crafty}
 
 services:
-  minecraft-bedrock-server:
-    image: ${MINECRAFT_IMAGE:-itzg/minecraft-bedrock-server}:${MINECRAFT_TAG:-latest}
-    container_name: ${CONTAINER_NAME:-minecraft_bedrock_server}
-
-    stdin_open: true
-    tty: true
-
-    ports:
-      - "${BEDROCK_PORT:-19132}:19132/udp"
+  crafty:
+    image: ${CRAFTY_IMAGE:-registry.gitlab.com/crafty-controller/crafty-4}:${CRAFTY_TAG:-latest}
+    container_name: ${CRAFTY_CONTAINER_NAME:-crafty_container}
+    restart: unless-stopped
 
     environment:
-      EULA: ${EULA:-TRUE}
-      VERSION: ${VERSION:-LATEST}
-      SERVER_NAME: ${SERVER_NAME:-Raptor Bedrock}
-      GAMEMODE: ${GAMEMODE:-survival}
-      DIFFICULTY: ${DIFFICULTY:-normal}
-      MAX_PLAYERS: ${MAX_PLAYERS:-25}
-      ONLINE_MODE: ${ONLINE_MODE:-true}
-      LEVEL_NAME: ${LEVEL_NAME:-raptor}
-      LEVEL_SEED: ${LEVEL_SEED:-}
-      LEVEL_TYPE: ${LEVEL_TYPE:-DEFAULT}
-      VIEW_DISTANCE: ${VIEW_DISTANCE:-12}
-      TICK_DISTANCE: ${TICK_DISTANCE:-4}
-      MAX_THREADS: ${MAX_THREADS:-2}
-      PLAYER_IDLE_TIMEOUT: ${PLAYER_IDLE_TIMEOUT:-30}
-      ALLOW_CHEATS: ${ALLOW_CHEATS:-false}
-      WHITE_LIST: ${WHITE_LIST:-false}
-      WHITE_LIST_USERS: ${WHITE_LIST_USERS:-}
-      OPS: ${OPS:-}
-      PACKAGE_BACKUP_KEEP: ${PACKAGE_BACKUP_KEEP:-2}
+      TZ: ${TZ:-America/Chicago}
+
+    ports:
+      - "${CRAFTY_PANEL_PORT:-8443}:8443"
+      - "${CRAFTY_DYNMAP_PORT:-8123}:8123"
+      - "${CRAFTY_BEDROCK_PORT:-19132}:19132/udp"
+      - "${CRAFTY_JAVA_PORT_RANGE:-25500-25600}:25500-25600"
 
     volumes:
-      - ${DATA_PATH:-./bedrock-data}:/data
+      - ${CRAFTY_BACKUPS_PATH:-./crafty/backups}:/crafty/backups
+      - ${CRAFTY_LOGS_PATH:-./crafty/logs}:/crafty/logs
+      - ${CRAFTY_SERVERS_PATH:-./crafty/servers}:/crafty/servers
+      - ${CRAFTY_CONFIG_PATH:-./crafty/config}:/crafty/app/config
+      - ${CRAFTY_IMPORT_PATH:-./crafty/import}:/crafty/import
 
-    restart: unless-stopped
-    stop_grace_period: ${STOP_GRACE_PERIOD:-60s}
-
-    healthcheck:
-      test: ["CMD-SHELL", "test -f /data/server.properties"]
-      interval: ${HEALTHCHECK_INTERVAL:-30s}
-      timeout: ${HEALTHCHECK_TIMEOUT:-10s}
-      retries: ${HEALTHCHECK_RETRIES:-5}
-      start_period: ${HEALTHCHECK_START_PERIOD:-60s}
-
-    logging:
-      driver: json-file
-      options:
-        max-size: ${LOG_MAX_SIZE:-10m}
-        max-file: ${LOG_MAX_FILE:-5}
-
-    deploy:
-      resources:
-        limits:
-          memory: ${MEMORY_LIMIT:-2800m}
